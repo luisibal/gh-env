@@ -1,0 +1,46 @@
+name: Deployment
+on:
+  push:
+    branches:
+      - main
+      - dev
+#global env variables, will be available in all jobs
+env:
+  MONGODB_DB_NAME: gha-demo
+jobs:
+  test:
+    #env variables at job level
+    env:
+      MONGODB_CLUSTER_ADDRESS: cluster0.zcecven.mongodb.net
+      MONGODB_USERNAME: luisibal001
+      MONGODB_PASSWORD: yw1VOq5i78js9jQS
+      PORT: 8080
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get Code
+        uses: actions/checkout@v3
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: npm-deps-${{ hashFiles('**/package-lock.json') }}
+      - name: Install dependencies
+        run: npm ci
+      - name: Run server
+      # https://docs.github.com/en/actions/learn-github-actions/variables
+      # using environmental variable (varies how to use depending in what OS Is currently used)
+        run: npm start & npx wait-on http://127.0.0.1:$PORT
+      - name: Run tests
+        run: npm test
+      - name: Output information
+      #outputting an Env variable
+        run: echo "MONGODB_USERNAME:${{ env.MONGODB_USERNAME }}"
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      #using env variables in different jobs, MONGODB_USERNAME is not available in this job
+      - name: Output information
+        run: |
+          echo "MONGODB_USERNAME:${{ env.MONGODB_USERNAME }}"
+          echo "MONGODB_DB_NAME:${{ env.MONGODB_DB_NAME }}"
