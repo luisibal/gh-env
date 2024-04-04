@@ -9,11 +9,12 @@ env:
   MONGODB_DB_NAME: gha-demo
 jobs:
   test:
-    #env variables at job level
+    #env variables at job level, only available in this job
     env:
       MONGODB_CLUSTER_ADDRESS: cluster0.zcecven.mongodb.net
-      MONGODB_USERNAME: luisibal001
-      MONGODB_PASSWORD: yw1VOq5i78js9jQS
+      #referencing secrets by using secrets context object
+      MONGODB_USERNAME: ${{ secrets.MONGODB_USERNAME }}
+      MONGODB_PASSWORD: ${{ secrets.MONGODB_PASSWORD }}
       PORT: 8080
     runs-on: ubuntu-latest
     steps:
@@ -33,7 +34,7 @@ jobs:
       - name: Run tests
         run: npm test
       - name: Output information
-      #outputting an Env variable
+      #outputting an Env variable, using env context
         run: echo "MONGODB_USERNAME:${{ env.MONGODB_USERNAME }}"
   deploy:
     needs: test
