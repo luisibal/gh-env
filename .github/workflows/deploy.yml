@@ -9,10 +9,10 @@ env:
   MONGODB_DB_NAME: gha-demo
 jobs:
   test:
-    #env variables at job level, only available in this job
+    #referencing the environment that will be used for this job
+    environment: testing
     env:
       MONGODB_CLUSTER_ADDRESS: cluster0.zcecven.mongodb.net
-      #referencing secrets by using secrets context object
       MONGODB_USERNAME: ${{ secrets.MONGODB_USERNAME }}
       MONGODB_PASSWORD: ${{ secrets.MONGODB_PASSWORD }}
       PORT: 8080
@@ -28,19 +28,15 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Run server
-      # https://docs.github.com/en/actions/learn-github-actions/variables
-      # using environmental variable (varies how to use depending in what OS Is currently used)
         run: npm start & npx wait-on http://127.0.0.1:$PORT
       - name: Run tests
         run: npm test
       - name: Output information
-      #outputting an Env variable, using env context
         run: echo "MONGODB_USERNAME:${{ env.MONGODB_USERNAME }}"
   deploy:
     needs: test
     runs-on: ubuntu-latest
     steps:
-      #using env variables in different jobs, MONGODB_USERNAME is not available in this job
       - name: Output information
         run: |
           echo "MONGODB_USERNAME:${{ env.MONGODB_USERNAME }}"
